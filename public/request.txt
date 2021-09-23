@@ -1,0 +1,10 @@
+Illuminate\Http\UploadedFile Object
+(
+    [test:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 
+    [originalName:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 1.pdf
+    [mimeType:Symfony\Component\HttpFoundation\File\UploadedFile:private] => application/pdf
+    [error:Symfony\Component\HttpFoundation\File\UploadedFile:private] => 0
+    [hashName:protected] => 
+    [pathName:SplFileInfo:private] => C:\xampp\tmp\php408F.tmp
+    [fileName:SplFileInfo:private] => php408F.tmp
+)
