@@ -1,173 +1,202 @@
 
 
 <?php $__env->startSection('content'); ?>
-<div class="container">
-  <div class="row justify-content-center">
-    <div class="d-flex flex-column" style="width:100%">
-      <div class="page-header">
-        <div class="page-header-content header-elements-md-inline">
-          <div class="page-title d-flex">
-            <h4>
-              <span class="font-weight-bold mr-2">Create</span>
-              <i class="icon-circle-right2 mr-2"></i>
-              <span class="font-weight-bold mr-2">Meeting</span>
-            </h4>
+
+<style>
+  .agenda_picked {
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: white;
+    border-color: #D9524F;
+    border-width: 5px;
+    border-radius: 50%;
+  }
+
+  .agenda_unpick {
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: white;
+    border-color: #0275D8;
+    border-width: 5px;
+    border-radius: 50%;
+  }
+
+  .title_picked {
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: white;
+    border-color: #0275D8;
+    border-width: 5px;
+    border-radius: 50%;
+  }
+
+  .title_unpick {
+    top: 0;
+    left: 0;
+    height: 25px;
+    width: 25px;
+    background-color: white;
+    border-color: #0275D8;
+    border-width: 1px;
+    border-radius: 50%;
+  }
+</style>
+
+<div class="padding-5 d-flex flex-column" style="gap:20px">
+
+  <div class="inter-bold header_text"><?php echo e(__('meeting.create_meeting')); ?></div>
+  <div class="card border_radius_12" style="margin:0">
+    <form enctype="multipart/form-data" action="<?php echo e(route('meetings.store')); ?>" method="POST" id="form" class="card-body">
+
+      <input type="hidden" name="count" id="countTitle">
+      <input type="hidden" name="group_id" value="<?php echo e($group_id); ?>">
+      <?php echo csrf_field(); ?>
+      <div class="d-flex flex-column" style="gap:20px">
+
+        <div class="d-flex flex-column" style="gap:8px">
+          <div class="inter-medium plain_text"><?php echo e(__('meeting.title')); ?><span class="text-danger">*</span></div>
+          <input type="text" class="form-control input_text" name="title" required>
+        </div>
+
+        <div class="d-flex flex-column" style="gap:8px">
+          <div class="inter-medium plain_text"><?php echo e(__('meeting.organiser')); ?><span class="text-danger">*</span></div>
+          <select name="organiser_id" class="form-control select_text">
+            <optgroup style="font-size:12px">
+              <?php $__currentLoopData = $group_members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $group_member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+              <option value="<?php echo e($group_member->members->id); ?>"><?php echo e($group_member->members->name); ?></option>
+              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="d-flex flex-column" style="gap:8px">
+          <div class="inter-medium plain_text"><?php echo e(__('meeting.secretary')); ?><span class="text-danger">*</span></div>
+          <select name="secretary_id" class="form-control select_text">
+            <optgroup style="font-size:12px">
+              <?php $__currentLoopData = $group_members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $group_member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+              <option value="<?php echo e($group_member->members->id); ?>"><?php echo e($group_member->members->name); ?></option>
+              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="d-flex flex-column" style="gap:8px">
+          <div class="inter-medium plain_text"><?php echo e(__('meeting.location')); ?><span class="text-danger">*</span></div>
+          <input type="text" class="form-control input_text" name="venue" required>
+        </div>
+
+        <!-- time -->
+        <div class="d-flex" style="gap:20px">
+          <div class="d-flex flex-column" style="gap:8px">
+            <div class="inter-medium plain_text"><?php echo e(__('meeting.date')); ?><span class="text-danger">*</span></div>
+            <input type="date" class="form-control input_text" name="date" required>
+          </div>
+
+          <div class="d-flex flex-column" style="gap:8px">
+            <div class="inter-medium plain_text"><?php echo e(__('meeting.time')); ?><span class="text-danger">*</span></div>
+            <input type="time" class="form-control input_text" name="time" required>
+          </div>
+
+          <div class="d-flex flex-column" style="gap:8px">
+            <div class="inter-medium plain_text"><?php echo e(__('meeting.duration')); ?><span class="text-danger">*</span></div>
+            <div class="d-flex align-items-center" style="gap:8px">
+              <input type="number" class="form-control input_text" name="hour" min='0' max='24' required>
+              <div class="inter-medium plain_text"><?php echo e(__('meeting.hours')); ?></div>
+              <input type="number" class="form-control input_text" name="minute" min='0' max='60' required>
+              <div class="inter-medium plain_text"><?php echo e(__('meeting.minutes')); ?></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex flex-column" style="gap:30px">
+          <div class="d-flex flex-column" style="gap:10px">
+            <div class="inter-medium plain_text"><?php echo e(__('meeting.agenda_selection')); ?></div>
+            <div class="d-flex" style="gap:20px">
+              <button class="btn btn-primary button_text" style="width:fit-content" onclick="addNewTitle()" type="button"><?php echo e(__('meeting.add_title')); ?></button>
+              <button type="submit" class="btn btn-primary button_text"><?php echo e(__('meeting.create_meeting')); ?></button>
+            </div>
+          </div>
+
+
+          <!-- agenda -->
+          <div style="display:grid;grid-template-columns:repeat(2,1fr)">
+            <div class="d-flex flex-column" style="gap:15px">
+              <!-- title agenda -->
+              <div id="titleOrder" class="d-flex flex-column" style="gap:10px"></div>
+            </div>
+            <!-- pending agenda -->
+            <div class="d-flex flex-column" style="gap:10px" id="pendingAgendaOrder">
+              <?php $__currentLoopData = $pending_agendas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pending_agenda): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+              <div class="d-flex" id="pending_agenda<?php echo e($pending_agenda->id); ?>">
+                <input type="hidden" value="<?php echo e($pending_agenda->id); ?>" id="hiddenID<?php echo e($pending_agenda->id); ?>">
+                <button class="agenda_unpick" onclick="addToTitle(<?php echo e($pending_agenda->id); ?>)" id="addToTitle<?php echo e($pending_agenda->id); ?>" type="button"></button>
+                <div><?php echo e($pending_agenda->title); ?></div>
+              </div>
+              <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+            </div>
           </div>
         </div>
       </div>
-
-      <div class="content">
-        <div>
-          <form enctype="multipart/form-data" action="<?php echo e(route('meetings.store')); ?>" method="POST" id="form">
-            <div class="card">
-              <div class="card-body">
-                <input type="hidden" name="count" id="countTitle">
-                <?php echo csrf_field(); ?>
-                <input type="hidden" name="group_id" value="<?php echo e($group_id); ?>">
-                <legend class="font-weight-semibold text-uppercase font-size-sm">
-                  <i class="icon-address-book mr-2"></i>
-                </legend>
-                <div class="form-group row">
-                  <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Title:</label>
-                  <div class="col-lg-9">
-                    <input value="" type="text" class="form-control form-control-lg" name="title" placeholder="Title" required>
-                  </div>
-                </div>
-                <div class="form-group row">
-                  <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Organiser:</label>
-                  <div class="col-lg-9">
-                    <select name="organiser_id" class="form-control form-control-lg">
-                      <?php $__currentLoopData = $group_members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $group_member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <option value="<?php echo e($group_member->members->id); ?>"><?php echo e($group_member->members->name); ?></option>
-                      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </select>
-                  </div>
-                </div>
-
-
-                <div class="form-group row">
-                  <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Secretary:</label>
-                  <div class="col-lg-9">
-                    <select name="secretary_id" class="form-control form-control-lg">
-                    <?php $__currentLoopData = $group_members; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $group_member): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                        <option value="<?php echo e($group_member->members->id); ?>"><?php echo e($group_member->members->name); ?></option>
-                      <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-                    </select>
-                  </div>
-                </div>
-
-                <div class="form-group row">
-                  <label class="col-lg-3 col-form-label">Date:</label>
-                  <div class="col-lg-9">
-                    <input value="" type="date" class="form-control form-control-lg" name="date" placeholder="Date">
-                  </div>
-                </div>
-
-                <div class="form-group row">
-                  <label class="col-lg-3 col-form-label">Time:</label>
-                  <div class="col-lg-9">
-                    <input value="" type="time" class="form-control form-control-lg" name="time">
-                  </div>
-                </div>
-
-                <div class="form-group row">
-                  <label class="col-lg-3 col-form-label">Venue:</label>
-                  <div class="col-lg-9">
-                    <input value="" type="text" class="form-control form-control-lg" name="venue">
-                  </div>
-                </div>
-
-
-              </div>
-            </div>
-            <div class="d-flex justify-content-between" style="border:1px solid black">
-              <div style="width:50%">
-                <div class="card">
-                  <div class="card-body">
-
-                    <div class="form-group row">
-                      <button class="btn btn-success" type="button" onclick="addNewTitle(<?php echo e($group_id); ?>)">Add New Title</button>
-                    </div>
-
-                  </div>
-                  
-                  <div class="" id="titleOrder">
-                    </div>
-                </div>
-              </div>
-              <!-- left -->
-              <div style="width:50%">
-                <div class="card">
-                  <div class="card-body" id="pendingAgendaOrder">
-                    <?php $__currentLoopData = $pending_agendas; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $pending_agenda): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                    <div id="pending_agenda<?php echo e($pending_agenda->id); ?>" style="border:1px solid black;margin:5%">
-                    <input type="hidden" value="<?php echo e($pending_agenda->id); ?>" id="hiddenID<?php echo e($pending_agenda->id); ?>">
-                      <button class="btn btn-primary margin-right-5" onclick="addToTitle(<?php echo e($pending_agenda->id); ?>)" id="addToTitle<?php echo e($pending_agenda->id); ?>" type="button"><?php echo e($pending_agenda->title); ?> (<?php echo e($pending_agenda->users->name); ?>) </button>
-                      <div>
-                        Description:<?php echo e($pending_agenda->description); ?>
-
-                      </div>
-                      <div>
-                        Attachment File: <a href="<?php echo e(asset('/storage/'.$pending_agenda->file)); ?>" download><?php echo e($pending_agenda->filename); ?></a>
-                      </div>
-                    </div>
-                    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
-
-                  </div>
-                </div>
-              </div>
-              <!-- right -->
-            </div>
-            <div class="text-right" style="float:right">
-              <button type="submit" class="btn btn-success">
-                Create
-                <i class="icon-database-insert ml-1"></i>
-              </button>
-            </div>
-          </form>
-
-
-
-        </div>
-
-      </div>
-    </div>
+    </form>
   </div>
-</div>
 
+</div>
 <script>
   var select = 0;
   var count = 0;
 
+  addNewTitle();
 
-
-  function addNewTitle(id) {
+  function addNewTitle() {
     count++;
-    
+    var text = "";
     $("#countTitle").val(count);
+    if (count == 1) {
+      text += '<div class="d-flex flex-column" style="gap:20px"><div class="d-flex align-items-center" style="gap:20px" ><button class="title_unpick" type = "button" onclick="selectThis(' + count + ')" id="titleSelected' + count + '"></button><div><input type="text" class="form-control form-control-sm" name="title' + count + '" id="title' + count + '" value="Introduction"></div></div> <div class="d-flex flex-column" style="margin-left:20px;gap:15px" id="pending_agendaOrder' + count + '"></div></div>';
+    } else {
+      text += '<div class="d-flex flex-column" style="gap:20px"><div class="d-flex align-items-center" style="gap:20px" ><button class="title_unpick" type = "button" onclick="selectThis(' + count + ')" id="titleSelected' + count + '"></button><div><input type="text" class="form-control form-control-sm" name="title' + count + '" id="title' + count + '"></div></div> <div class="d-flex flex-column" style="margin-left:20px;gap:15px" id="pending_agendaOrder' + count + '"></div></div>';
+    }
 
-    var text = '<div class="d-flex flex-column" ><div class="d-flex" style="padding:5%" id="titleSelected'+count+'"><input value="" type="text" class="form-control form-control-lg" name="title'+count+'" placeholder="Title" id="title' + count + '"> <button class="btn btn-primary" type = "button" onclick="selectThis(' + count + ')">Select</button></div><div id="pending_agendaOrder' + count + '"></div></div>';
+
     $("#titleOrder").append(text);
+    if (count == 1) {
+      selectThis(1);
+    }
   }
 
   function selectThis(id) {
-    $("#titleSelected" + select).css("background-color", "white");
+    $("#titleSelected" + select).removeClass("title_picked");
+    $("#titleSelected" + select).addClass("title_unpick");
     select = id;
-    $("#titleSelected" + select).css("background-color", "greenyellow");
+    $("#titleSelected" + select).removeClass("title_unpick");
+    $("#titleSelected" + select).addClass("title_picked");
   }
 
   function addToTitle(id) {
-  //  array[select-1].currentID.push(id); 
-  //  console.log(array);
-    $("#hiddenID"+id).attr("name","title"+select+"Item[]");
-    $("#pending_agendaOrder" + select).append($("#pending_agenda" + id));
-    $("#addToTitle" + id).attr("onclick", "backToPending('"+id+"', '"+select+"')");
+    //  array[select-1].currentID.push(id); 
+    //  console.log(array);
+    if (select != 0) {
+      $("#hiddenID" + id).attr("name", "title" + select + "Item[]");
+      $("#pending_agendaOrder" + select).append($("#pending_agenda" + id));
+      $("#addToTitle" + id).removeClass("agenda_unpick");
+      $("#addToTitle" + id).addClass("agenda_picked");
+      $("#addToTitle" + id).attr("onclick", "backToPending('" + id + "', '" + select + "')");
+    }
+
   }
 
-  function backToPending(id,select) {
- 
-    $("#hiddenID"+id).attr("name","none");
+  function backToPending(id, select) {
+
+    $("#hiddenID" + id).attr("name", "none");
     $("#pendingAgendaOrder").append($("#pending_agenda" + id));
+    $("#addToTitle" + id).addClass("agenda_unpick");
+    $("#addToTitle" + id).removeClass("agenda_picked");
     $("#addToTitle" + id).attr("onclick", "addToTitle(" + id + ")");
 
   }

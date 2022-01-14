@@ -4,15 +4,17 @@ namespace App\Http\Controllers\Group;
 
 use App\Http\Controllers\Controller;
 use App\Models\Group;
+
 use App\Models\MemberGroup;
+
 use Illuminate\Http\Request;
+
 
 class GroupMemberController extends Controller
 {
   public function setAdmin($member_id,$group_id){
-    $group = Group::where('id',$group_id)->first();
-    $group->user_id = $member_id;
-    $group->save();
+     Group::where('id',$group_id)->update(['user_id'=>$member_id]);
+
     return redirect()->route('groups.index')->with(['message' => 'Admin Changed']);
   }
 
@@ -34,10 +36,10 @@ class GroupMemberController extends Controller
   }
 
   public function updatePosition(Request $request){
-    $member_group = MemberGroup::where('id',$request->id)->first();
-    $member_group->position = $request->position;
-    $member_group->save();
-   
-    return redirect()->route('groups.edit',$member_group->group_id)->with(['message' => 'Position Updated']);
+
+    MemberGroup::where('group_id',$request->group_id)->where('member_id',$request->user_id)->update(["position"=>$request->position]);
+    return redirect()->route('groups.edit',$request->group_id)->with(['message' => 'Position Updated']);
   }
+
+
 }

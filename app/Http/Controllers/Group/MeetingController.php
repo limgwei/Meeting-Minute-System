@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Group;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\UpdateMeetingRequest;
 use App\Models\Agenda;
 use App\Models\Attendance;
 use App\Models\Group;
@@ -11,8 +12,11 @@ use App\Models\Meeting;
 use App\Models\MemberGroup;
 use App\Models\PendingAgenda;
 use App\Models\TitleAgenda;
+use App\Models\User;
+use App\Providers\GoogleCalendarService;
 use App\Providers\PDFService;
 use Barryvdh\Snappy\Facades\SnappyPdf;
+use Carbon\Carbon;
 use DateTime;
 // use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
@@ -40,11 +44,11 @@ class MeetingController extends Controller
     public function create($id)
     {
         $pending_agendas =  PendingAgenda::where('group_id', $id)->with('users')->get();
-        $group_members = MemberGroup::where('group_id',$id)->with('members')->get();
+        $group_members = MemberGroup::where('group_id', $id)->with('members')->get();
         return view("meeting.add", array(
             'pending_agendas' => $pending_agendas,
             'group_id' => $id,
-            'group_members'=> $group_members
+            'group_members' => $group_members
         ));
     }
 
@@ -56,49 +60,60 @@ class MeetingController extends Controller
      */
     public function store(Request $request)
     {
- 
+       
+        $group_members = MemberGroup::where("group_id", $request->group_id)->pluck("member_id")->toArray();
+        $user = User::whereIn("id", $group_members)->pluck("email")->toArray();
+
+        $minutes = ($request->hour * 60) + $request->minute;
+        
+        $start_datetime =  Carbon::parse($request->date."T".$request->time);
+        $end_datetime = Carbon::parse($request->date."T".$request->time)->addMinutes($minutes);
+       
+        
+        // create google calendar api
+        $link = GoogleCalendarService::insert($request->title, $request->venue, $start_datetime->format("Y-m-d"), $start_datetime->format("H:i:s"), $end_datetime->format("Y-m-d"), $end_datetime->format("H:i:s"),$user);
+
+        //create meeting
+        $request->merge([
+            "link" => $link[0],
+            "eventId" => $link[1],
+            'approve' => 0,
+            'total_end_date_time' => $end_datetime->format("Y-m-d H:i:s"),
+            'total_start_date_time' => $start_datetime->format("Y-m-d H:i:s"),
+            'total_minute'=>$minutes
+        ]);
+
+
+        $meeting = Meeting::create($request->all());
+
+        //handle agenda and pending agenda
         $count = $request->count;
-
-        $meeting = new Meeting();
-        $meeting->group_id = $request->group_id;
-        $meeting->title = $request->title;
-        $meeting->date = $request->date;
-        $meeting->time = $request->time;
-        $meeting->venue = $request->venue;
-        $meeting->organiser_id = $request->organiser_id;
-        $meeting->secretary_id = $request->secretary_id;
-        $meeting->approve = 0;
-        $meeting->save();
-
         for ($i = 1; $i <= $count; $i++) {
             $textTitle = "title" . $i;
-            $title = $request->$textTitle;
-            $titleAgenda = new TitleAgenda();
-            $titleAgenda->meeting_id = $meeting->id;
-            $titleAgenda->title = $title;
-            $titleAgenda->save();
-
-
-            $textAgenda = $textTitle . "Item";
-            $items = $request->$textAgenda;
-            if ($items) {
-                foreach ($items as $item) {
-                    $pending_agenda = PendingAgenda::where('id', $item)->first();
-                    $agenda = new Agenda();
-                    $agenda->title = $pending_agenda->title;
-                    $agenda->file = $pending_agenda->file;
-                    $agenda->filename = $pending_agenda->filename;
-                    $agenda->description = $pending_agenda->description;
-                    $agenda->title_id = $titleAgenda->id;
-                    $agenda->video = $pending_agenda->video;
-                    $agenda->user_id = $pending_agenda->user_id;
-                    $agenda->save();
-
-                    PendingAgenda::where('id', $item)->delete();
+            if($request->$textTitle!=null){
+                $titleAgenda = TitleAgenda::create([
+                    "meeting_id" => $meeting->id,
+                    "title" => $request->$textTitle
+                ]);
+                $textAgenda = $textTitle . "Item";
+                $items = $request->$textAgenda;
+                if ($items) {
+                    foreach ($items as $item) {
+                        $pending_agenda = PendingAgenda::where('id', $item)->first();
+                        $pending_agenda->title_id = $titleAgenda->id;
+                        Agenda::create($pending_agenda->toArray());
+                        PendingAgenda::where('id', $item)->delete();
+                    }
                 }
             }
+  
         }
-        return redirect()->route('meetings.show', $meeting->id)->with(['message' => 'Meeting Added']);
+
+      
+       
+        $meeting->temporary_file = $this->mergePDF($meeting->id);
+        $meeting->save();
+        return redirect()->route('meetings.show', $meeting->id)->with(['message' => 'Meeting Created']);
     }
 
     /**
@@ -109,36 +124,41 @@ class MeetingController extends Controller
      */
     public function show($id)
     {
-        $group_id = Meeting::where('id', $id)->first()->group_id;
-        $group_members = MemberGroup::where('group_id', $group_id)->with('members')->get();
-        $titles = TitleAgenda::where('meeting_id', $id)->get();
-        
-        foreach ($titles as $title) {
-            $agendas = Agenda::where('title_id', $title->id)->with(['users','action_user'])->get();
-            
-            foreach ($agendas as $agenda) {
-                $keypoints = explode("new-]", $agenda->keypoints);
-                $agenda_edit = false;
-                if ($agenda->user_id == Auth::user()->id) {
-                    $agenda_edit = true;
-                }
-                $agenda->agenda_edit = $agenda_edit;
-                $agenda->keypoints = $keypoints;
-            }
-            $title->agendas = $agendas;
+        //get meeting information
+        $meeting = Meeting::where("id", $id)->with(["title_agenda", "title_agenda.agenda", "organiser", "secretary"])->first();
+        $meeting->member = MemberGroup::where("group_id", $meeting->group_id)->get();
+
+        $meeting->time = date('h:i a', strtotime($meeting->time));
+        if ($meeting->end_time) {
+            $meeting->end_time = date('h:i a', strtotime($meeting->end_time));
         }
 
-        $user_id = Group::where('id', $group_id)->first()->user_id;
+       
+        $title_agenda = TitleAgenda::where('meeting_id',$meeting->id)->pluck('id')->toArray();
+        $agenda_count = Agenda::whereIn('title_id',$title_agenda)->get();
+        $text = "";
+        $turn = 0;
+        foreach($agenda_count as $count){
+            $turn++;
+            if($turn==1){
+                $text.=$count->id;
+            }else{
+                $text.=",".$count->id;
+            }
+           
+        }
+       
+        $meeting->agenda_count = $text;
+        
+        //check whether login is admin or not
+        $user_id = Group::where('id', $meeting->group_id)->first()->user_id;
         $is_admin = false;
         if ($user_id == Auth::user()->id) {
             $is_admin = true;
         }
-        $meeting = Meeting::where('id', $id)->with(["organiser","secretary"])->first();
 
-        $meeting->time = date('h:i a',strtotime($meeting->time));
-        
-
-        foreach ($group_members as $group_member) {
+        //who come and no come
+        foreach ($meeting->member as $group_member) {
             $member = Attendance::where('meeting_id', $id)->where('is_present', 1)->where('user_id', $group_member->members->id)->first();
             if ($member) {
                 $group_member->is_present = true;
@@ -147,12 +167,18 @@ class MeetingController extends Controller
             }
         }
 
+        $newformat = date('d M Y-h:iA', strtotime($meeting->date . ' ' . $meeting->time));
+        $meeting->local_time = $newformat;
+        $current_time = date("Y-m-d H:i:s");
+
+        $meeting->link_opened = true;
+        if ($meeting->total_start_date_time <= $current_time && $meeting->total_end_date_time >= $current_time) {
+            $meeting->link_opened = true;
+        }
+        
+
         return view("meeting.view", array(
-            'meeting_id' => $id,
-            'group_members' => $group_members,
-            'agendas' => $agendas,
             'is_admin' => $is_admin,
-            'titles' => $titles,
             'meeting' => $meeting
         ));
     }
@@ -165,6 +191,20 @@ class MeetingController extends Controller
      */
     public function edit($id)
     {
+        $meeting = Meeting::where("id", $id)->first();
+        $group_members = MemberGroup::where('group_id', $meeting->group_id)->with('members')->get();
+        $pending_agendas =  PendingAgenda::where('group_id', $meeting->group_id)->with('users')->get();
+       
+        $hours =floor($meeting->total_minute/60);         
+        $minutes = $meeting->total_minute%60;
+        
+        return view("meeting.edit", array(
+            'meeting' => $meeting,
+            'group_members' => $group_members,
+            'pending_agendas' => $pending_agendas,
+            'hours'=>$hours,
+            'minutes'=>$minutes
+        ));
     }
 
     /**
@@ -174,40 +214,37 @@ class MeetingController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
-    }
-
-
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
+     
+        $minutes = $request->hour*60 + $request->minute;
+        $start_datetime =  Carbon::parse($request->date."T".$request->time);
+        $end_datetime = Carbon::parse($request->date."T".$request->time)->addMinutes($minutes);
+        $request->merge([
+            'total_end_date_time' => $end_datetime->format("Y-m-d H:i:s"),
+            'total_start_date_time' => $start_datetime->format("Y-m-d H:i:s"),
+            'total_minute'=>$minutes
+        ]);
+        Meeting::where("id", $request->id)->update($request->except(['_token','hour','minute']));
+        
+        return redirect()->back()->with(['message' => 'Meeting Updated']);
     }
 
     public function exportPDF($id)
     {
 
-        
+        $meeting = Meeting::where("id", $id)->first();
+        $name = "meeting.pdf";
 
-        
-       $meeting = Meeting::where("id",$id)->first();
-       $name = "meeting.pdf";
+        $headers = ['Content-Disposition: inline;filename="' . $name . '"'];
 
-       $headers = ['Content-Disposition: inline;filename="'.$name.'"'];
-
-      
-        return response()->file(storage_path('app/public/merge/'.$meeting->meeting_file,$headers));
-        
+       
+        return response()->file(storage_path('app/public/merge/' . $meeting->meeting_file, $headers));
     }
 
     public function checkAttendance(Request $request)
     {
+       
         $meeting_id = $request->meeting_id;
         $group_id = Meeting::where('id', $meeting_id)->first()->group_id;
         $attendances = [];
@@ -215,117 +252,125 @@ class MeetingController extends Controller
             $attendances = $request->attendance;
         }
 
-        $group_member_attends = MemberGroup::where('group_id', $group_id)->whereIn('member_id', $attendances)->get();
-        $group_member_not_attends = MemberGroup::where('group_id', $group_id)->whereNotIn('member_id', $attendances)->get();
-
-
-
-        foreach ($group_member_attends as $group_member_attend) {
-
-            $attend = Attendance::where('user_id', $group_member_attend->member_id)->where('meeting_id', $meeting_id)->first();
+        $group_members = MemberGroup::where("group_id", $group_id)->get();
+        foreach ($group_members as $group_member) {
+            $attend = Attendance::where('user_id', $group_member->member_id)->where('meeting_id', $meeting_id)->first();
 
             if (!$attend) {
                 $attend = new Attendance();
             }
 
             $attend->meeting_id = $meeting_id;
-            $attend->user_id = $group_member_attend->member_id;
-            $attend->position = $group_member_attend->position;
-            $attend->is_present = 1;
-            $attend->save();
-        }
-
-
-
-        foreach ($group_member_not_attends as $group_member_not_attend) {
-            $attend = Attendance::where('user_id', $group_member_not_attend->member_id)->where('meeting_id', $meeting_id)->first();
-
-            if (!$attend) {
-                $attend = new Attendance();
+            $attend->user_id = $group_member->member_id;
+            if ($group_member->position == null) {
+                $attend->position = "";
+            } else {
+                $attend->position = $group_member->position;
             }
-            $attend->meeting_id = $meeting_id;
-            $attend->user_id = $group_member_not_attend->member_id;
-            $attend->position = $group_member_not_attend->position;
-            $attend->is_present = 0;
+
+            if (in_array($group_member->member_id, $attendances)) {
+                $attend->is_present = 1;
+            } else {
+                $attend->is_present = 0;
+            }
             $attend->save();
         }
-
-        
-        $this->generatePDF($meeting_id);
-
-
+        $meeting = Meeting::where('id',$meeting_id)->first();
+        $meeting->meeting_file =  $this->generatePDF($meeting_id);
+        $meeting->save();
+       
         return redirect()->route('meetings.show', $meeting_id)->with(['message' => 'Meeting Save']);
     }
 
-     function generatePDF($id){
+    function mergePDF($id)
+    {
+        $title_ids = TitleAgenda::where('meeting_id', $id)->pluck('id')->toArray();
+        $agendas = Agenda::whereIn('title_id', $title_ids)->get();
 
-        
-        
-        $group_id = Meeting::where('id', $id)->with(["organiser","secretary"])->first()->group_id;
-        $group_members = MemberGroup::where('group_id', $group_id)->with('members')->get();
+        $pdfMerger = PdfMerger::init();
+
+        if(count($agendas)!=0){
+            foreach ($agendas as $agenda) {
+                $pdfMerger->addPDF(storage_path('app/public/' . $agenda->file), 'all');
+            }
+            $pdfMerger->merge();
+            $file_name = time() . $id . ".pdf";
+            $pdfMerger->save(storage_path('app/public/temporary/' . $file_name), "file");
+            return $file_name;
+        }
+        else{
+            return 'none';
+        }
+       
+
+    }
+
+    function generatePDF($id)
+    {
+        $group_id = Meeting::where('id', $id)->with(["organiser", "secretary"])->first()->group_id;
+
         $titles = TitleAgenda::where('meeting_id', $id)->get();
+        $countTitle = 0;
 
+        $countKeypoint = 0;
         foreach ($titles as $title) {
+            $countTitle++;
 
-            $agendas = Agenda::where('title_id', $title->id)->with(['users','action_user'])->get();
-           
+            $preTitle = $countTitle . ".";
+            $title->title = $preTitle . $title->title;
+
+            $agendas = Agenda::where('title_id', $title->id)->with(['users', 'action_user'])->get();
+            $countAgenda = 0;
             foreach ($agendas as $agenda) {
 
-                $keypoints = explode("new-]", $agenda->keypoints);
+                $countAgenda++;
+                $preAgenda = $preTitle . $countAgenda . ".";
+                $agenda->title = $preAgenda . $agenda->title;
 
-                $agenda->keypoints = $keypoints;
             }
             $title->agendas = $agendas;
         }
-        $user_id = Group::where('id', $group_id)->first()->user_id;
-        $is_admin = false;
-        if ($user_id == Auth::user()->id) {
-            $is_admin = true;
-        }
+
         $meeting = Meeting::where('id', $id)->first();
-        if($meeting->meeting_file){
-            PDFService::delete("merge/".$meeting->meeting_file);
+        if ($meeting->meeting_file) {
+            PDFService::delete("merge/" . $meeting->meeting_file);
         }
         
-        $date = new DateTime($meeting->time.' 06/13/2013');
-        $date_text = $date->format('d M Y') ;
-        $time_text = $date->format('h:i a') ;
-    
+        $date_text = Carbon::parse($meeting->date)->format('d M Y');
+        $time_text = Carbon::parse($meeting->time)->format('h:i a');
+
         $meeting_id = $id;
 
         $attends = Attendance::where('meeting_id', $id)->where('is_present', 1)->with('users')->get();
         $absents = Attendance::where('meeting_id', $id)->where('is_present', 0)->with('users')->get();
-        
+        $group = Group::where('id',$meeting->group_id)->first();
         $pdf = SnappyPdf::loadView('meeting.exportPDF', compact(
             'meeting_id',
-            'group_members',
-            'agendas',
-            'is_admin',
             'titles',
             'meeting',
             'attends',
             'absents',
             'date_text',
-            'time_text'
+            'time_text',
+            'group'
         ));
-        
+
        
         $pdf->save(storage_path('app/public/merge/prepare.pdf'), "file");
-        
-        $title_ids = TitleAgenda::where('meeting_id', $id)->pluck('id')->toArray();
-        $agendas = Agenda::whereIn('title_id', $title_ids)->get();
 
         $pdfMerger = PdfMerger::init();
         $pdfMerger->addPDF(storage_path('app/public/merge/prepare.pdf'), 'all');
-        
-        foreach ($agendas as $agenda) {
-            $pdfMerger->addPDF(storage_path('app/public/' . $agenda->file), 'all');
+        if($meeting->temporary_file!="none"){
+            $pdfMerger->addPDF(storage_path('app/public/temporary/' .$meeting->temporary_file), 'all');
         }
-        $pdfMerger->merge();
 
-        $file_name = time().$meeting->title.".pdf";
-        $meeting->meeting_file = $file_name;
-        $meeting->save();
-        $pdfMerger->save(storage_path('app/public/merge/'.$file_name), "file");
+        $pdfMerger->merge();
+   
+        $file_name = time() . $meeting->title . ".pdf";
+       
+        $pdfMerger->save(storage_path('app/public/merge/' . $file_name), "file");
+        return $file_name;
+       
     }
+
 }

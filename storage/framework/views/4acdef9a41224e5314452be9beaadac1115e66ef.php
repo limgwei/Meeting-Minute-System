@@ -24,6 +24,7 @@
               <form enctype="multipart/form-data" action="<?php echo e(route('groupsMember.updatePosition')); ?>" method="POST">
                 <?php echo csrf_field(); ?>
                 <input type="hidden" value="<?php echo e($member_group->id); ?>" name="id">
+                <input type="hidden" value="<?php echo e($member_group->group_id); ?>" name="group_id">
                 <legend class="font-weight-semibold text-uppercase font-size-sm">
                   <i class="icon-address-book mr-2"></i>
                 </legend>

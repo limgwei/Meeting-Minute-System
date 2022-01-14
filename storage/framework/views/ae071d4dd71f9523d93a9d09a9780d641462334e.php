@@ -1,151 +1,112 @@
 
 
 <?php $__env->startSection('content'); ?>
-<div class="d-flex flex-row justify-content-between" style="width:50%">
-  <button type="button" class="btn btn-secondary btn-success" data-toggle="modal" data-target="#addNewGroup"><b><i class="icon-plus2" ></i></b>
-    Add New Group
-  </button>
-  <button type="button" class="btn btn-secondary btn-success" data-toggle="modal" data-target="#joinGroup"><b><i class="icon-plus2" ></i></b>
-    Join new group
-  </button>
-</div>
-<div class="container">
-  <div class="row justify-content-center">
-    <div style="width:100%">
-      <div class="card">
-        <div class="card-body">
-          <div class="table-responsive">
-            <table class="table table-striped" id="groupDatabale" width="100%">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Title</th>
-                  <th>Creator</th>
-                  <th>Created At</th>
-                  <!-- <th class="text-center" style="width: 10%;">Actions</th> -->
-                  <th class="text-center" style="width: 20%;"><i class="
-                                icon-circle-down2"></i></th>
-                </tr>
-              </thead>
-              <tbody></tbody>
-            </table>
+
+<div class="padding-5 bg d-flex flex-column" style="gap:30px">
+  <div class="d-flex justify-content-between">
+
+    <input type="text" class="form-control input_text" style="max-width:200px" placeholder="Search..">
+
+    <div>
+      <button class="btn btn-primary button_text" data-toggle="modal" data-target="#addNewGroup"><?php echo e(__('group.add_group')); ?></button>
+      <button class="btn btn-default button_text" data-toggle="modal" data-target="#joinGroup"><?php echo e(__('group.join_group')); ?></button>
+    </div>
+  </div>
+  <div class="inter-bold header_text"><?php echo e(__('group.groups')); ?></div>
+
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:335px;grid-gap:50px">
+    <?php $__currentLoopData = $groups; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $group): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+
+
+    <div class="card border_radius_12 d-flex flex-column" style="margin:0">
+
+      <div class="card-body d-flex flex-column justify-content-around">
+
+        <div class="d-flex flex-column align-items-center">
+          <?php if($group->user_id == Auth::user()->id): ?>
+          <div class="d-flex flex-column-reverse" style="width:100%">
+            <a href="<?php echo e(route('groups.edit',$group->id)); ?>" style="text-align:right;"><i class="bi bi-pencil-square" style='font-size:20px;'></i></a>
           </div>
+          <?php endif; ?>
+
+          <?php if($group->file): ?>
+          <img src="<?php echo e(asset('/storage/'.$group->file)); ?>" class="img-card" alt="Card image cap" style="width:150px;height:150px">
+          <?php else: ?>
+          <img class="img-card" src="<?php echo e(asset('/storage/icon/group.jpg')); ?>" alt="Card image cap" style="width:150px;height:150px">
+          <?php endif; ?>
+
+
+        </div>
+        <div class="d-flex justify-content-center flex-column align-items-center">
+          <div class="inter-bold"><?php echo e($group->title); ?></div>
+          <a href="<?php echo e(route('groups.show',$group->id)); ?>" class="join-btn " style="line-height: 50px;width:100%;"><?php echo e(__('group.view')); ?></a>
+        </div>
+
+      </div>
+
+
+    </div>
+    <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+  </div>
+
+
+
+
+  <div id="addNewGroup" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><span class="font-weight-bold"><?php echo e(__('group.add_group')); ?></span></h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form action="<?php echo e(route('groups.store')); ?>" method="POST">
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label"><span class="text-danger">*</span class="plain_text"><?php echo e(__('group.title')); ?>:</label>
+              <div class="col-lg-9">
+                <input type="text" class="form-control input_text" name="title" placeholder="<?php echo e(__('group.title')); ?>" required>
+              </div>
+            </div>
+            <?php echo csrf_field(); ?>
+            <div class="text-right">
+              <button type="submit" class="btn btn-primary button_text">
+                SAVE
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="joinGroup" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title"><span class="font-weight-bold"><?php echo e(__('group.join_group')); ?></span></h5>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form action="<?php echo e(route("groups.joinGroup")); ?>" method="POST">
+            <div class="form-group row">
+              <label class="col-lg-3 col-form-label"><span class="text-danger">*</span class="plain_text"><?php echo e(__('group.code')); ?>:</label>
+              <div class="col-lg-9">
+                <input type="text" class="form-control input_text" name="code" required>
+              </div>
+            </div>
+            <?php echo csrf_field(); ?>
+            <div class="text-right">
+              <button type="submit" class="btn btn-primary button_text">
+                <?php echo e(__('group.join')); ?>
+
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<div id="addNewGroup" class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><span class="font-weight-bold">Add New Group</span></h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form action="<?php echo e(route('groups.store')); ?>" method="POST">
-                    <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Title:</label>
-                        <div class="col-lg-9">
-                            <input type="text" class="form-control form-control-lg" name="title" placeholder="Title" required>
-                        </div>
-                    </div>
-                    <?php echo csrf_field(); ?>
-                    <div class="text-right">
-                        <button type="submit" class="btn btn-primary">
-                            SAVE
-                            <i class="icon-database-insert ml-1"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div id="joinGroup" class="modal fade" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title"><span class="font-weight-bold">Join Group</span></h5>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form action="<?php echo e(route("groups.joinGroup")); ?>" method="POST">
-                    <div class="form-group row">
-                        <label class="col-lg-3 col-form-label"><span class="text-danger">*</span>Code:</label>
-                        <div class="col-lg-9">
-                            <input type="text" class="form-control form-control-lg" name="code" required>
-                        </div>
-                    </div>
-                    <?php echo csrf_field(); ?>
-                    <div class="text-right">
-                        <button type="submit" class="btn btn-primary">
-                            Join
-                            <i class="icon-database-insert ml-1"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-    <script>
-      $('#groupDatabale').DataTable({
-        processing: true,
-        serverSide: true,
-        stateSave: true,
-        lengthMenu: [10, 25, 50, 100, 200, 500],
-        order: [
-          [0, "desc"]
-        ],
-        ajax: '<?php echo e(route("groupsDatatable")); ?>',
-        columns: [{
-            data: 'id',
-            visible: false,
-            searchable: false
-          },
-          {
-            data: 'title'
-          },
-          {
-            data: 'user_id'
-          },
-          {
-            data: 'created_at'
-          },
-          {
-            data: 'action',
-            sortable: false,
-            searchable: false
-          },
-        ],
-        colReorder: true,
-        scrollCollapse: true,
-        dom: '<"custom-processing-banner"r>flBtip',
-        language: {
-          search: '_INPUT_',
-          searchPlaceholder: 'Search with anything...',
-          lengthMenu: '_MENU_',
-          paginate: {
-            'first': 'First',
-            'last': 'Last',
-            'next': '&rarr;',
-            'previous': '&larr;'
-          },
-          processing: '<i class="icon-spinner10 spinner position-left mr-1"></i>Waiting for server response...'
-        },
-        buttons: {
-          dom: {
-            button: {
-              className: 'btn btn-sm btn-primary ml-1'
-            }
-          },
-          buttons: []
-        }
-      });
-    </script>
-    <?php $__env->stopSection(); ?>
+<?php $__env->stopSection(); ?>
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH C:\xampp\htdocs\minut\resources\views/group/index.blade.php ENDPATH**/ ?>

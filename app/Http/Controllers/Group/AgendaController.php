@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Group;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ChangeTitleRequest;
+use App\Http\Requests\UpdateKeyPointRequest;
 use App\Models\Agenda;
 use App\Models\Group;
 use App\Models\Keypoint;
@@ -76,24 +78,10 @@ class AgendaController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(UpdateKeyPointRequest $request, $id)
     {
-        $agenda = Agenda::where('id',$id)->first();
-        $keypoints = $request->keypoints;
-        if($keypoints){
-            $agenda->keypoints = $keypoints;
-        }
-        $action_taken = $request->action_taken;
-        $taken_by = $request->taken_by;
-        if($action_taken){
-            $agenda->action_taken = $action_taken;
-        }
-
-        if($taken_by){
-            $agenda->action_user_id = $taken_by;
-        }
         
-        $agenda->save();
+        Agenda::where('id',$id)->update($request->validated());
         return 'Keypoint saved';
     }
 
@@ -111,10 +99,8 @@ class AgendaController extends Controller
        
     }
 
-    public function changeTitle(Request $request,$id){
-        $agenda = Agenda::where("id",$id)->first();
-        $agenda->title = $request->title;
-        $agenda->save();
+    public function changeTitle(ChangeTitleRequest $request,$id){
+        Agenda::where('id',$id)->update($request->validated());
         return 'success';
     }
 }

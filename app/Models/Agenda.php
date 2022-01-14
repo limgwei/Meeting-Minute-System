@@ -9,7 +9,15 @@ class Agenda extends Model
 {
     use HasFactory;
     protected $table = "agendas";
-
+    protected $fillable = [
+        "title",
+        "file",
+        "filename",
+        "description",
+        "title_id",
+        "video",
+        "user_id"
+    ];
     
     public function titles()
     {

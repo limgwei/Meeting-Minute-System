@@ -11,129 +11,137 @@
 <link rel="icon" href="<?php echo e(asset('/storage/image/icon.png')); ?>" type="image/icon type">
 
 <!-- Scripts -->
-<script src="<?php echo e(asset('js/app.js')); ?>" defer></script>
+<script src="<?php echo e(asset('js/app.js')); ?>"></script>
+<script type="text/javascript" src="<?php echo e(asset('/storage/js/jquery.min.js')); ?>"></script>
+<script type="text/javascript" src="<?php echo e(asset('/storage/js/printThis.js')); ?>"></script>
+<script type="text/javascript" src="<?php echo e(asset('/storage/js/sweetalert.min.js')); ?>"></script>
 
 <!-- Fonts -->
 <link rel="dns-prefetch" href="//fonts.gstatic.com">
-<link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
+<link href="<?php echo e(asset('/storage/css/fonts/nunito.css')); ?>" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
 <!-- Styles -->
 <link href="<?php echo e(asset('css/app.css')); ?>" rel="stylesheet">
 
-
+<!-- sidebar -->
 <link type="text/css" rel="stylesheet" href="<?php echo e(asset('/storage/css/sidebar.css')); ?>" />
-<script type="text/javascript" src="<?php echo e(asset('/storage/js/jquery.min.js')); ?>"></script>
-<script type="text/javascript" src="<?php echo e(asset('/storage/js/printThis.js')); ?>"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-jgrowl/1.4.8/jquery.jgrowl.min.js" integrity="sha512-h77yzL/LvCeAE601Z5RzkoG7dJdiv4KsNkZ9Urf1gokYxOqtt2RVKb8sNQEKqllZbced82QB7+qiDAmRwxVWLQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<link type="text/css" rel="stylesheet" href="<?php echo e(asset('/storage/css/custom.css')); ?>" />
+
 <script type="text/javascript" src="<?php echo e(asset('/storage/js/datatables.min.js')); ?>"></script>
 <script type="text/javascript" src="<?php echo e(asset('/storage/js/basic.js')); ?>"></script>
 
-<script type="text/javascript" src="<?php echo e(asset('/storage/js/extensions/fixed_columns.min.js')); ?>"></script>
-<script type="text/javascript" src="<?php echo e(asset('/storage/js/extensions/col_reorder.min.js')); ?>"></script>
-<script type="text/javascript" src="<?php echo e(asset('/storage/js/extensions/buttons.min.js')); ?>"></script>
+
 <link rel="stylesheet" href="<?php echo e(asset('/storage/css/icons/icomoon/styles.min.css')); ?>">
-<link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.3/css/fontawesome.min.css" integrity="sha384-wESLQ85D6gbsF459vf1CiZ2+rr+CsxRY0RpiF1tLlQpDnAgg6rwdsUF1+Ics2bni" crossorigin="anonymous">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
 
 
-<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.5.2/css/bootstrap.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/1.11.1/css/dataTables.bootstrap4.min.css">
-<link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.2.9/css/responsive.bootstrap4.min.css">
+<!-- bootstrap -->
+<script src="<?php echo e(asset('/storage/js/dataTables.bootstrap5.min.js')); ?>"></script>
 
+<link rel="stylesheet" href="<?php echo e(asset('/storage/css/bootstrap/bootstrap.min.css')); ?>">
+<link rel="stylesheet" href="<?php echo e(asset('/storage/css/bootstrap/dataTables.bootstrap5.min.css')); ?>">
+<link rel="stylesheet" href="<?php echo e(asset('/storage/css/bootstrap/bootstrap.css')); ?>">
+<link rel="stylesheet" href="<?php echo e(asset('/storage/css/bootstrap/font-awesome.min.css')); ?>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.3.0/font/bootstrap-icons.css">
+
+<style>
+    .alert_position {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: fit-content;
+        height: 50px;
+        margin: auto;
+    }
+</style>
 </head>
 
-<body>
+<body class="bg">
 
-    <div id="app">
-        <nav class="navbar navbar-expand-md shadow-sm nav">
-            <div class="container d-flex">
-                <?php if(Auth::user()): ?>
-                <div id="sidebar" class="d-flex justify-content-end" style="flex-grow:8;">
-                    <a href="<?php echo e(route('groups.index')); ?>" style="color:<?php echo e(Route::is('groups.index')?'black':'white'); ?>"><?php echo e(__('sidebar.group')); ?></a>
-                    <a href=""><?php echo e(__('sidebar.friend')); ?></a>
-                    <a href=""><?php echo e(__('sidebar.schedule')); ?></a>
-                </div>
+    <div id="app" class="d-flex">
+        <?php if(Auth::user()): ?>
+
+        <nav class="sidenav d-flex flex-column font-regular align-items-center" style="gap:70px;">
+
+            <a href="<?php echo e(route('groups.index')); ?>" class="d-flex align-items-center justify-content-center" style="width:max-content;"><img src=" <?php echo e(asset('/storage/image/icon.png')); ?>" alt="icon.svg" style="width:40px;padding-top:50px"></a>
+
+            <div class="d-flex flex-column" style="gap:50px;width:100%" >
+                <?php if(Route::is('groups.*') || Route::is('pending_agendas.*')|| Route::is('agendas.*')|| Route::is('meetings.*')): ?>
+                <a href="<?php echo e(route('groups.index')); ?>" class="d-flex align-items-center justify-content-center " style="width:100%;border-left:5px solid #007bff">
+                    <i class="bi bi-house-door" style="font-size:40px;color:#007bff"></i></a>
+                <?php else: ?>
+                <a href="<?php echo e(route('groups.index')); ?>" class="d-flex align-items-center justify-content-center " style="width:100%">
+                    <i class="bi bi-house-door" style="font-size:40px;color:black"></i></a>
                 <?php endif; ?>
-                <div class="collapse navbar-collapse" id="" style="flex-grow:4">
-                    <!-- Left Side Of Navbar -->
-                    <!-- Right Side Of Navbar -->
-                    <ul class="navbar-nav ml-auto">
-                        <!-- Authentication Links -->
-                        <?php if(auth()->guard()->guest()): ?>
-                        <?php if(Route::has('login')): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo e(route('login')); ?>"><?php echo e(__('Login')); ?></a>
-                        </li>
-                        <?php endif; ?>
 
-                        <?php if(Route::has('register')): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="<?php echo e(route('register')); ?>"><?php echo e(__('Register')); ?></a>
-                        </li>
-                        <?php endif; ?>
-                        <?php else: ?>
-                        <li class="nav-item dropdown">
-                            <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
-                                <?php echo e(Auth::user()->name); ?>
+                <a href="<?php echo e(route('meeting_schedule.meeting_schedule')); ?>" class="d-flex align-items-center justify-content-center " style="width:100%;<?php echo e(Route::is('meeting_schedule.*')?'border-left:5px solid #007bff':''); ?>"><i class="bi bi-calendar" style="font-size:40px;color:<?php echo e(Route::is('meeting_schedule.*')?'#007bff':'black'); ?>;"></i></a>
 
-                            </a>
-
-                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="<?php echo e(route('logout')); ?>" onclick="event.preventDefault();
-                                                     document.getElementById('logout-form').submit();">
-                                    <?php echo e(__('Logout')); ?>
-
-                                </a>
-
-                                <form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="d-none">
-                                    <?php echo csrf_field(); ?>
-                                </form>
-                            </div>
-                        </li>
-                        <?php endif; ?>
-                    </ul>
-                </div>
+                <a href="<?php echo e(route('settings.index')); ?>" class="d-flex align-items-center justify-content-center " style="width:100%;<?php echo e(Route::is('settings.*')?'border-left:5px solid #007bff':''); ?>"><i class="bi bi-gear" style="font-size:40px;color:<?php echo e(Route::is('settings.*')?'#007bff':'black'); ?>"></i>
+                </a>
+                <a href="<?php echo e(route("invitation.invitation")); ?>" class="d-flex align-items-center justify-content-center " style="width:100%;<?php echo e(Route::is('invitation.*')?'border-left:5px solid #007bff':''); ?>"><i class="bi bi-bell" style="font-size:40px;color:<?php echo e(Route::is('invitation.*')?'#007bff':'black'); ?>"></i>
+                    <div class="align-self-start justify-content-center" style="color:white;background-color:red;border:1px solid white;border-radius:100%;width:25px;height:25px;display:none" id="notification">0</div>
+                </a>
             </div>
+
         </nav>
-        <script>
+
+        <?php endif; ?>
+        <main style="width:100%;">
+            <?php echo $__env->yieldContent('content'); ?>
+        </main>
 
 
-        </script>
         <?php if(session()->has('message')): ?>
-        <div class="alert alert-success" style="position:block;width:100%">
-            <script>
-                swal("<?php echo e(session()->get('message')); ?>", "", "success");
-            </script>
-
+        <div class="alert alert-success alert-dismissible alert_position" role="alert" style="text-align:center">
+            <button type="button" class="close" data-dismiss="alert" style="display:none">&times;</button>
+            <strong><?php echo e(session()->get('message')); ?></strong>
         </div>
+        <script>
+            setTimeout(function() {
+                $(".close").click();
+            }, 1000);
+        </script>
+
+
         <?php endif; ?>
 
         <?php if(session()->has('error')): ?>
-        <div class="alert alert-danger" style="position:block;width:100%">
-            <script>
-                swal("<?php echo e(session()->get('error')); ?>", "", "error");
-            </script>
 
+        <div class="alert alert-danger alert-dismissible alert_position" role="alert" style="text-align:center">
+            <button type="button" class="close" data-dismiss="alert" style="display:none">&times;</button>
+            <strong><?php echo e(session()->get('error')); ?></strong>
         </div>
+        <script>
+            setTimeout(function() {
+                $(".close").click();
+            }, 1000);
+        </script>
+
         <?php endif; ?>
-        <main>
-            <!-- Page Content -->
-            <div id="page-content-wrapper">
 
-                <?php echo $__env->yieldContent('content'); ?>
-            </div>
-    </div>
-    </div>
-
-
-    </main>
     </div>
 </body>
 <script>
-    $(document).ready(function() {
-        $('.alert').fadeIn().delay(1000).fadeOut();
-    });
+    if ($("#notification").length != 0) {
+
+        var url = '/<?php echo e(env("base_url")); ?>' + 'notifications';
+        $.ajax({
+            type: "GET",
+            url: url,
+            success: function(data) {
+
+                if (data != 0) {
+                    $("#notification").css("display", "flex");
+                    $("#notification").text(data);
+                }
+            },
+            erros: function(data) {
+                console.log(data);
+            }
+        });
+    }
 </script>
 
 </html><?php /**PATH C:\xampp\htdocs\minut\resources\views/layouts/app.blade.php ENDPATH**/ ?>

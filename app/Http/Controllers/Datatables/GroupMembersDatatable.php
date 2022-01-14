@@ -29,26 +29,28 @@ class GroupMembersDatatable
             }
         })
         ->editColumn('name',function($user)use ($id){
+            $text = '<div class="d-flex align-items-center">';
             $group = Group::where('id',$id)->first();
             if($group->user_id==$user->id){
                 return $user->name . "(Admin)";
             }else{
                 return $user->name;
             }
+           
         })
         ->addColumn('action', function ($user) use($id) {
             $group = Group::where('id',$id)->first();
-            
+
             if($user->id == $group->user_id){
-                return '<div> <a href="/'.env("base_url").'groups/editPosition/'.$user->id.'/'.$id.'" class="btn btn-success mr-2">Edit Position</a>
+                return '<div class="d-flex justify-content-center"><button class="btn btn-success mr-2 button_text" data-toggle="modal" onclick="editPosition('.$user->id.')" type="button">Edit Position</button>
                 </div>';
                 
             }
             else if($group->user_id==Auth::user()->id){
-                return '<div>
-                <a href="/'.env("base_url").'groups/setAdmin/'.$user->id.'/'.$id.'" class="btn btn-sm btn-primary mr-2">Set As Admin</a>
-                <a href="/'.env("base_url").'groups/deleteMember/'.$user->id.'/'.$id.'" class="btn btn-sm btn-danger mr-2">Kick</a>
-                <a href="/'.env("base_url").'groups/editPosition/'.$user->id.'/'.$id.'" class="btn btn-success mr-2">Edit Position</a>
+                return '<div class="d-flex justify-content-center">
+                <a href="/'.env("base_url").'groups/setAdmin/'.$user->id.'/'.$id.'" class="btn btn-sm btn-primary mr-2 button_text">Set As Admin</a>
+                <a href="/'.env("base_url").'groups/deleteMember/'.$user->id.'/'.$id.'" class="btn btn-sm btn-danger mr-2 button_text">Kick</a>
+                <button class="btn btn-success mr-2 button_text" data-toggle="modal " onclick="editPosition('.$user->id.')"  type="button">Edit Position</button>
                 </div>';
             }
         })
