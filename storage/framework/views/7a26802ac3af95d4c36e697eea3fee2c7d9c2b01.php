@@ -10,6 +10,26 @@
 
 
 <style>
+
+.modal {
+  text-align: center;
+  padding: 0!important;
+}
+
+.modal:before {
+  content: '';
+  display: inline-block;
+  height: 100%;
+  vertical-align: middle;
+  margin-right: -4px;
+}
+
+.modal-dialog {
+  display: inline-block;
+  text-align: left;
+  vertical-align: middle;
+}
+
   .progress {
     width: 150px;
     height: 150px;
@@ -128,10 +148,11 @@
   }
 </style>
 <button id="load" style="display:none">Load It!</button>
-<div class="modal js-loading-bar">
+
+<div class="modal js-loading-bar " data-backdrop="static">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-body">
+    <div class="modal-content" style="background-color:#7c7c7d;border:0px solid grey">
+      <div class="modal-body" style="background-color:#7c7c7d;">
 
         <div class="progress blue">
           <span class="progress-left">

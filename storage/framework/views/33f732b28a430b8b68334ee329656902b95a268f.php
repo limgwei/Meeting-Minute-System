@@ -28,7 +28,7 @@
           <?php if($user->file): ?>
           <img src="<?php echo e(asset('/storage/'.$user->file)); ?>" alt="Card image cap" class="hover_button" id="output">
           <?php else: ?>
-          <img src="https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" alt="Card image cap" class="hover_button" id="output">
+          <img src="<?php echo e(asset('/storage/icon/user.png')); ?>" alt="Card image cap" class="hover_button" id="output">
           <?php endif; ?>
           <label for="image" class="picture_hover">
             <div class="d-flex justify-content-center align-items-center ">

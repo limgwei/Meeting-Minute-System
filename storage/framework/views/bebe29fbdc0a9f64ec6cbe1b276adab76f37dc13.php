@@ -31,6 +31,8 @@
               <input type="text" id="code" class="form-control input_text" name="title" value="<?php echo e($group->password); ?>" style="width:fit-content" disabled>
               <button type="button" class="btn btn-default" style="color:blue" onclick="change('<?php echo e($group->id); ?>')"><?php echo e(__('group.change')); ?></button>
 
+              <a href="<?php echo e(route('groups.delete',$group->id)); ?>" class="btn btn-default" style="color:red"  ><?php echo e(__('group.delete')); ?></a>
+
             </div>
 
           </div>
@@ -44,7 +46,7 @@
           <img src="<?php echo e(asset('/storage/'.$group->file)); ?>" alt="Card image cap" id="output" class="hover_button">
 
           <?php else: ?>
-          <img src="https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885__480.jpg" alt="Card image cap" id="output" class="hover_button">
+          <img src="<?php echo e(asset('/storage/icon/group.jpg')); ?>" alt="Card image cap" id="output" class="hover_button">
           <?php endif; ?>
           <label for="image" class="picture_hover">
             <div class="d-flex justify-content-center align-items-center ">

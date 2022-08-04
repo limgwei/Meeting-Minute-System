@@ -7,6 +7,7 @@ use App\Http\Requests\SaveGroupRequest;
 use App\Models\Agenda;
 use App\Models\Attendance;
 use App\Models\Group;
+use App\Models\InvitationLink;
 use App\Models\Meeting;
 use App\Models\MemberGroup;
 use App\Models\PendingAgenda;
@@ -90,8 +91,8 @@ class GroupController extends Controller
         $pass_count = 0;
         foreach ($pass_meetings as $pass_meeting) {
             $pass_count++;
-            $pass_meeting->local_date = date('d M Y', strtotime($pending_meeting->date ));
-            $pass_meeting->local_time =date('h:iA', strtotime( $pending_meeting->time));
+            $pass_meeting->local_date = date('d M Y', strtotime($pass_meeting->date ));
+            $pass_meeting->local_time =date('h:iA', strtotime( $pass_meeting->time));
         }
         if($pass_count<10){
             $pass_count = "0".$pass_count;
@@ -198,10 +199,23 @@ class GroupController extends Controller
      */
     public function destroy($id)
     {
+        
+        $meetings =   Meeting::where('group_id', $id)->get();
+        foreach($meetings as $meeting){
+            $title_agendas = TitleAgenda::where('meeting_id',$meeting->id)->get();
+            foreach($title_agendas as $title_agenda){
+                Agenda::where('title_id',$title_agenda->id)->delete();
+            }
+            TitleAgenda::where('meeting_id',$meeting->id)->delete();
+            Attendance::where('meeting_id',$meeting->id)->delete();
+        }
 
+        
+        InvitationLink::where('group_id', $id)->delete();
         MemberGroup::where('group_id', $id)->delete();
         Group::where('id', $id)->delete();
         Meeting::where('group_id', $id)->delete();
+
         return redirect()->route('groups.index')->with(['message' => 'Group Deleted']);
     }
 
@@ -260,7 +274,7 @@ class GroupController extends Controller
     public function meeting_schedule_action()
     {
         $group_members_id = MemberGroup::where('member_id', Auth::user()->id)->pluck('group_id')->toArray();
-        $meetings = Meeting::WhereIn('group_id', $group_members_id)->get();
+        $meetings = Meeting::WhereIn('group_id', $group_members_id)->with('group')->get();
         //  return $meetings;
         $schedule_format = array();
         
@@ -276,8 +290,9 @@ class GroupController extends Controller
             $o->date = $newDate;
             $o->name = $meeting->title;
             $newformat = date('h:iA', strtotime($meeting->time));
-            $o->badge = $newformat;
-            $o->description = $meeting->venue;
+            $o->badge = '<i class="bi bi-alarm-fill"></i> '.$newformat;
+            $text = '<i class="bi bi-people-fill"></i> '.$meeting->group->title."<br>".'<i class="bi bi-geo-alt-fill"></i> '.$meeting->venue;
+            $o->description =$text;
         
             if($color==0){
                 $o->type = "event";

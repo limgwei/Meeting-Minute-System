@@ -71,12 +71,21 @@ class MeetingController extends Controller
        
         
         // create google calendar api
-        $link = GoogleCalendarService::insert($request->title, $request->venue, $start_datetime->format("Y-m-d"), $start_datetime->format("H:i:s"), $end_datetime->format("Y-m-d"), $end_datetime->format("H:i:s"),$user);
+        // $link = GoogleCalendarService::insert($request->title, $request->venue, $start_datetime->format("Y-m-d"), $start_datetime->format("H:i:s"), $end_datetime->format("Y-m-d"), $end_datetime->format("H:i:s"),$user);
 
         //create meeting
+        // $request->merge([
+        //     "link" => $link[0],
+        //     "eventId" => $link[1],
+        //     'approve' => 0,
+        //     'total_end_date_time' => $end_datetime->format("Y-m-d H:i:s"),
+        //     'total_start_date_time' => $start_datetime->format("Y-m-d H:i:s"),
+        //     'total_minute'=>$minutes
+        // ]);
+
         $request->merge([
-            "link" => $link[0],
-            "eventId" => $link[1],
+            "link" => 0,
+            "eventId" => 1,
             'approve' => 0,
             'total_end_date_time' => $end_datetime->format("Y-m-d H:i:s"),
             'total_start_date_time' => $start_datetime->format("Y-m-d H:i:s"),
@@ -171,10 +180,10 @@ class MeetingController extends Controller
         $meeting->local_time = $newformat;
         $current_time = date("Y-m-d H:i:s");
 
-        $meeting->link_opened = true;
-        if ($meeting->total_start_date_time <= $current_time && $meeting->total_end_date_time >= $current_time) {
-            $meeting->link_opened = true;
-        }
+        $meeting->link_opened = false;
+        // if ($meeting->total_start_date_time <= $current_time && $meeting->total_end_date_time >= $current_time) {
+        //     $meeting->link_opened = true;
+        // }
         
 
         return view("meeting.view", array(

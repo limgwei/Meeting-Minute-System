@@ -1,5 +1,5 @@
 <?php $__env->startSection('content'); ?>
-<div class="container d-flex flex-column justify-content-between align-items-center" style="max-width:400px;">
+<div class="card container d-flex flex-column justify-content-between align-items-center" style="max-width:400px;border-radius:12px">
     <form method="POST" action="<?php echo e(route('register')); ?>" style="margin-top:auto;margin-bottom:auto">
         <?php echo csrf_field(); ?>
         <div class="font-regular"><?php echo e(__('auth.welcome')); ?></div>

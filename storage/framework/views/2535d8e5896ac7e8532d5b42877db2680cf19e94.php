@@ -1,8 +1,9 @@
 
 
 <?php $__env->startSection('content'); ?>
-<script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
+<!-- <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script> -->
 
+<script src="https://cdn.tiny.cloud/1/lrk2tgho42o1v6yd85mgfrwtkfgdbmpn4auk4drvwupc7725/tinymce/5/tinymce.min.js" referrerpolicy="origin"></script>
 
 <style>
   .dropdown-btn {

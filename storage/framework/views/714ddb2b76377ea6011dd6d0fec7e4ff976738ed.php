@@ -21,7 +21,7 @@
 
         <div class="d-flex flex-column" style="gap:8px">
           <div class="inter-medium plain_text"><?php echo e(__('pending_agenda.description')); ?></div>
-          <input type="text" class="form-control input_text" name="description" required >
+          <input type="text" class="form-control input_text" name="description" >
         </div>
 
         <div class="d-flex flex-column" style="gap:8px">

@@ -1,8 +1,8 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container d-flex flex-column justify-content-between align-items-center" style="max-width:400px;">
-  <form method="POST" action="{{ route('login') }}" style="margin-top:auto;margin-bottom:auto">
+<div class="card container d-flex flex-column justify-content-between align-items-center" style="max-width:400px;border-radius:12px">
+  <form method="POST" action="{{ route('login') }}" style="margin-top:auto;margin-bottom:auto" > 
     @csrf
     <div class="font-regular">{{ __('auth.welcome_back') }}</div>
     <div class="font-big">{{ __('auth.login_text') }}</div>

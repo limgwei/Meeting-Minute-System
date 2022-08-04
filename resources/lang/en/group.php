@@ -28,7 +28,7 @@ return [
   'title'=>'TITLE',
   'change'=>'Change password',
   'update'=>'Update group',
-  'delete'=>'Delete',
+  'delete'=>'Delete group',
   'edit_position'=>'Edit position',
   'save'=>'Save',
   'name'=>'Name',

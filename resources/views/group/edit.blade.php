@@ -31,6 +31,8 @@
               <input type="text" id="code" class="form-control input_text" name="title" value="{{$group->password}}" style="width:fit-content" disabled>
               <button type="button" class="btn btn-default" style="color:blue" onclick="change('{{$group->id}}')">{{ __('group.change') }}</button>
 
+              <a href="{{route('groups.delete',$group->id)}}" class="btn btn-default" style="color:red"  >{{ __('group.delete') }}</a>
+
             </div>
 
           </div>

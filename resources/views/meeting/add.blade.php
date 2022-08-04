@@ -158,9 +158,9 @@
     var text = "";
     $("#countTitle").val(count);
     if (count == 1) {
-      text += '<div class="d-flex flex-column" style="gap:20px"><div class="d-flex align-items-center" style="gap:20px" ><button class="title_unpick" type = "button" onclick="selectThis(' + count + ')" id="titleSelected' + count + '"></button><div><input type="text" class="form-control form-control-sm" name="title' + count + '" id="title' + count + '" value="Introduction"></div></div> <div class="d-flex flex-column" style="margin-left:20px;gap:15px" id="pending_agendaOrder' + count + '"></div></div>';
+      text += '<div class="d-flex flex-column" style="gap:20px"><div class="d-flex align-items-center" style="gap:20px" ><button class="title_unpick" type = "button" onclick="selectThis(' + count + ')" id="titleSelected' + count + '"></button><div><input type="text" class="form-control form-control-sm" name="title' + count + '" id="title' + count + '" value="Introduction" style="border-radius:5px"></div></div> <div class="d-flex flex-column" style="margin-left:20px;gap:15px" id="pending_agendaOrder' + count + '"></div></div>';
     } else {
-      text += '<div class="d-flex flex-column" style="gap:20px"><div class="d-flex align-items-center" style="gap:20px" ><button class="title_unpick" type = "button" onclick="selectThis(' + count + ')" id="titleSelected' + count + '"></button><div><input type="text" class="form-control form-control-sm" name="title' + count + '" id="title' + count + '"></div></div> <div class="d-flex flex-column" style="margin-left:20px;gap:15px" id="pending_agendaOrder' + count + '"></div></div>';
+      text += '<div class="d-flex flex-column" style="gap:20px"><div class="d-flex align-items-center" style="gap:20px" ><button class="title_unpick" type = "button" onclick="selectThis(' + count + ')" id="titleSelected' + count + '"></button><div><input type="text" class="form-control form-control-sm"  style="border-radius:5px" name="title' + count + '" id="title' + count + '"></div></div> <div class="d-flex flex-column" style="margin-left:20px;gap:15px" id="pending_agendaOrder' + count + '"></div></div>';
     }
 
 

@@ -10,9 +10,81 @@
 <!-- Add the evo-calendar.js for.. obviously, functionality! -->
 <script src="https://cdn.jsdelivr.net/npm/evo-calendar@1.1.2/evo-calendar/js/evo-calendar.min.js"></script>
 
-<link rel="stylesheet" type="text/css" href="{{asset('/storage/evo/demo/demo.css')}}">
+<style>
+  .calendar-table{
+    color:black!important;
+  }
+  th[colspan="7"]{
+    color:black!important;
+  }
 
-<section id="demos">
+  .event-empty {
+    background-color:white!important;
+    border:1px solid white!important;
+    border-radius: 12px;
+    box-shadow: 5px 0 18px -3px rgb(0 0 0 / 15%)!important;
+  }
+
+  .event-container>.event-info>p.event-title>span {
+    
+    color:  #007bff;
+    border: 1px solid #007bff;
+    background-color: white;
+}
+
+  .event-empty p{
+   color:#007bff!important;
+  
+  }
+  .event-list{
+    background-color:white!important;
+  }
+  .calendar-sidebar{
+    background-color:white!important;
+    box-shadow: 5px 0 18px -3px rgb(0 0 0 / 15%)!important;
+    border: 1px solid #f7f8fa;
+  }
+  .calendar-year{
+    color:black!important;
+  }
+
+.calendar-sidebar>.calendar-year>button.icon-button>span{
+  border-right: 4px solid black;
+    border-bottom: 4px solid black;
+}
+
+  .month{
+    color:black!important;
+  }
+
+  .active-month{
+    background-color:white!important;
+    color:#007bff!important;
+  }
+  .month:hover{
+    background-color:white!important;
+    color:#007bff!important;
+  }
+  #demoEvoCalendar{
+    box-shadow: 0 10px 50px -20px white;
+  }
+
+  .event-container{
+    box-shadow: 0 10px 50px -20px rgb(0 0 0 / 15%);
+  }
+  #eventListToggler {
+  
+    background-color:#007bff!important;
+    box-shadow: 5px 0 18px -3px rgb(0 0 0 / 15%)!important;
+  }
+
+  #sidebarToggler {
+    background-color:#007bff!important;
+    box-shadow: 5px 0 18px -3px rgb(0 0 0 / 15%)!important;
+  }
+</style>
+
+<section id="demos" class="card" style="border-radius:12px">
   <div class="section-content">
 
     <div class="log-content">
