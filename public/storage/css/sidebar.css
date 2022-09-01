@@ -1,0 +1,32 @@
+
+
+#sidebar a{
+  color:#ddd;
+  text-decoration: none;
+  font-size: 4vh;
+  padding:0% 5% 0% 5%;
+}
+#sidebar a:hover{
+  color:black !important;
+}
+
+#page-content-wrapper{
+  width:100%;
+  padding:5%;
+}
+
+.btn-default{
+  background-color: grey;
+}
+
+.padding-5{
+  padding: 5%;
+}
+
+.dispaly-none{
+  display: :none;
+}
+
+.margin-right-5{
+  margin-right:1% ;
+}

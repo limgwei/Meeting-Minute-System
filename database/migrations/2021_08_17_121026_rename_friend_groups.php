@@ -13,6 +13,7 @@ class RenameFriendGroups extends Migration
      */
     public function up()
     {
+        Schema::rename("friend_groups", "group_members");
        
         Schema::table('group_members', function(Blueprint $table) {
             $table->renameColumn('friend_id', 'member_id');
